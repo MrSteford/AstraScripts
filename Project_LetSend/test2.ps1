@@ -15,6 +15,7 @@ $recipientsLabel = New-Object System.Windows.Forms.Label
 $recipientsLabel.Location = New-Object System.Drawing.Point(10, 20)
 $recipientsLabel.Size = New-Object System.Drawing.Size(260, 20)
 $recipientsLabel.Text = "Введите адреса получателей через запятую:"
+
 $recipientsForm.Controls.Add($recipientsLabel)
 $recipientsBox = New-Object System.Windows.Forms.TextBox
 $recipientsBox.Location = New-Object System.Drawing.Point(10, 40)
@@ -30,7 +31,35 @@ $recipientsForm.AcceptButton = $recipientsOkButton
 if ($recipientsForm.ShowDialog() -eq [System.Windows.Forms.DialogResult]::OK) {
     $recipients = $recipientsBox.Text.Split(',')
 }
+# Запрос темы письма
+$subjectForm = New-Object System.Windows.Forms.Form
+$subjectForm.Text = "Введите тему письма"
+$subjectForm.Width = 250
+$subjectForm.Height = 150
+$subjectForm.FormBorderStyle = "FixedDialog"
+$subjectForm.StartPosition = "CenterScreen"
+$subjectForm.TopMost = $true
+$subjectLabel = New-Object System.Windows.Forms.Label
+$subjectLabel.Location = New-Object System.Drawing.Point(10, 20)
+$subjectLabel.Size = New-Object System.Drawing.Size(220, 20)
+$subjectLabel.Text = "Введите текст для темы"
+$subjectForm.Controls.Add($subjectLabel)
+$subjectBox = New-Object System.Windows.Forms.TextBox
+$subjectBox.Location = New-Object System.Drawing.Point(10, 40)
+$subjectBox.Size = New-Object System.Drawing.Size(220, 20)
+$subjectForm.Controls.Add($subjectBox)
+$dateOkButton = New-Object System.Windows.Forms.Button
+$dateOkButton.Location = New-Object System.Drawing.Point(10, 70)
+$dateOkButton.Size = New-Object System.Drawing.Size(75, 23)
+$dateOkButton.Text = "OK"
+$dateOkButton.DialogResult = [System.Windows.Forms.DialogResult]::OK
+$subjectForm.Controls.Add($dateOkButton)
+$subjectForm.AcceptButton = $dateOkButton
+if ($subjectForm.ShowDialog() -eq [System.Windows.Forms.DialogResult]::OK) {
+    $subjectText = $subjectBox.Text
+}
 # Запрос даты
+<# Add-Type -AssemblyName System.Windows.Forms
 $dateForm = New-Object System.Windows.Forms.Form
 $dateForm.Text = "Выберите дату"
 $dateForm.Width = 250
@@ -45,12 +74,27 @@ $dateOkButton.Text = "OK"
 $dateOkButton.DialogResult = [System.Windows.Forms.DialogResult]::OK
 $dateForm.Controls.Add($dateOkButton)
 $dateForm.AcceptButton = $dateOkButton
+$dateCancelButton = New-Object System.Windows.Forms.Button
+$dateCancelButton.Location = New-Object System.Drawing.Point(90, 150)
+$dateCancelButton.Size = New-Object System.Drawing.Size(75, 23)
+$dateCancelButton.Text = "Cancel"
+$dateCancelButton.DialogResult = [System.Windows.Forms.DialogResult]::Cancel
+$dateForm.Controls.Add($dateCancelButton)
+$dateForm.CancelButton = $dateCancelButton
+
 $monthCalendar = New-Object System.Windows.Forms.MonthCalendar
 $monthCalendar.Location = New-Object System.Drawing.Point(10, 10)
+
 $dateForm.Controls.Add($monthCalendar)
-if ($dateForm.ShowDialog() -eq [System.Windows.Forms.DialogResult]::OK) {
+$result = $dateForm.ShowDialog()
+if ($result -eq [System.Windows.Forms.DialogResult]::OK) {
     $date = $monthCalendar.SelectionStart.ToShortDateString()
 }
+elseif ($result -eq [System.Windows.Forms.DialogResult]::Cancel) {
+    [System.Windows.Forms.MessageBox]::Show("Отправления отменены")
+    exit
+} #>
+
 # Отправка каждого письма
 $sentCount = 0
 foreach ($file in $openFileDialog.FileNames) {
@@ -63,7 +107,7 @@ foreach ($file in $openFileDialog.FileNames) {
         $mail.Recipients.Add($recipient.Trim())
     }
     $name = [System.IO.Path]::GetFileNameWithoutExtension($file)
-    $mail.Subject = "Отправка: " + $name + " ARHIVE SCANNING HCP FROM " + $date
+    $mail.Subject = "Отправка: " + $name + " " + $subjectText + " " + $date
     $mail.Body = $name
     $mail.Send()
     $sentCount++
